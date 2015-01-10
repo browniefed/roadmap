@@ -1,0 +1,43 @@
+.grid {
+    position: relative;
+}
+.grid-lanes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+}
+
+.month-label {
+    display: inline-block;
+    width: 8.33333333%;
+    text-align: center;
+}
+.month-grid {
+    width: 8.33333333%;
+    position: relative;
+    display: inline-block;
+    height: 100%;
+
+    &::before {
+        content: '';
+        width: 1px;
+        background-color: #000;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+    }
+
+    &::after {
+        content: '';
+        width: 1px;
+        background-color: #000;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+    }
+}

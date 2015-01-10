@@ -26,6 +26,7 @@ module.exports = function(options) {
         "less": "css-loader!less-loader",
         "styl": "css-loader!stylus-loader",
         "sass": "css-loader!sass-loader",
+        "scss": "css-loader!sass-loader"
     }
     var additionalLoaders = [
         // { test: /some-reg-exp$/, loader: "any-loader" }
