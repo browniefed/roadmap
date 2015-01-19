@@ -1,6 +1,5 @@
 var React = require('react/addons'),
     RoadmapPanel = require('./Panel'),
-    ReactGridLayout = require('react-grid-layout'),
     lodash = require('lodash'),
     moment = require('moment'),
     DocumentTitle = require('react-document-title'),
@@ -9,6 +8,7 @@ var React = require('react/addons'),
     GridItem = require('roadmapper/GridItem'),
     FluxMixin = require('fluxxor').FluxMixin(React),
     StoreWatchMixin = require('fluxxor').StoreWatchMixin,
+    DateGridLayout = require('../components/DateGridLayout'),
     DateInterface = require('roadmapper/layout/DateInterface');
 
 
@@ -61,6 +61,7 @@ var RoadmapView = React.createClass({
     });
   },
   getLayout: function() {
+    debugger;
     var layout = (this.state.roadmap && this.state.roadmap.layout) || this.state.layout;
     if (!_.isEmpty(this.state.roadmap)) {
         layout = _.map(this.state.roadmap.items || [], function(item, index) {
@@ -79,7 +80,9 @@ var RoadmapView = React.createClass({
                 i: item.id + '',
                 y: index,
                 w: 5,
-                h: 5
+                h: 3,
+                minH: 3,
+                maxH: 3,
             }, (layoutItem || {}), startCoords);
 
         }, this);
@@ -91,29 +94,8 @@ var RoadmapView = React.createClass({
         return (layoutItem.id + '') == (id + '');
     })
   },
-  getYear: function() {
-    return moment().startOf('year').format('YYYY');
-  },
-  getMonths: function() {
-    return moment.months();
-  },
-  getMonthLabels: function() {
-    return _.map(this.getMonths(), function(month) {
-        return (
-            <div className="month-label">
-                {month}
-            </div>
-        )
-    })
-  },
-  getGridLanes: function() {
-    return _.map(this.getMonths(), function(month) {
-        return (
-            <div className="month-grid" />
-        )
-    })
-  },
-  onLayoutChange: function(layout) {
+
+  handleLayoutChange: function(layout) {
     if (!this.state.roadmap) {
         return;
     }
@@ -163,10 +145,9 @@ var RoadmapView = React.createClass({
     return DateInterface.dateToLayoutFields(scale, start, end);
   },
   handleDrag: function(layout, nextLayout) {
+
   },
-  componentDidMount: function() {
-    this.refs.grid.getDOMNode();
-  },
+
   handleChange: function(e) {
     this.setState({
         jamaApiId: e.target.value
@@ -205,22 +186,14 @@ var RoadmapView = React.createClass({
                     <button onClick={this.resyncItems}>Sync Items From Jama</button>
 
                 </div>
-                <div className="grid">
-                    <div className="grid-labels">
-                        {this.getMonthLabels()}
-                    </div>
-                    <div className="grid-lanes">
-                        {this.getGridLanes()}
-                    </div>
-                  <ReactGridLayout 
-                    ref="grid"
-                    layout={this.getLayout()} 
-                    onLayoutChange={this.onLayoutChange}
-                    onDrag={this.handleDrag}
-                      {...this.props}>
+                <DateGridLayout
+                    {...this.props}
+                    layout={this.getLayout()}
+                    onDrag={this.handleDrag()}
+                    onLayoutChange={this.handleLayoutChange}
+                >
                     {this.generateDOM()}
-                  </ReactGridLayout>
-                </div>
+                </DateGridLayout>
                 <RoadmapPanel />
           </div>
       </DocumentTitle>

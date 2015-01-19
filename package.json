@@ -4,7 +4,7 @@
   "description": "A roadmapping tool that allows syncing with arbitrary services",
   "main": "app/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev-server": "webpack-dev-server --content-base config/dev-server-public --config webpack-dev-server.config.js --progress --colors --port 2992",
     "hot-dev-server": "webpack-dev-server --content-base config/dev-server-public --config webpack-hot-dev-server.config.js --hot --progress --colors --port 2992",
     "build": "webpack --config webpack-production.config.js --progress --profile --colors",
