@@ -15,7 +15,6 @@ var rowHeight = 30,
 
 var RoadmapView = React.createClass({
   mixins: [
-            React.addons.PureRenderMixin, 
             TitleMixin, 
             StateMixin, 
             FluxMixin,
@@ -48,15 +47,47 @@ var RoadmapView = React.createClass({
         height: '100%', 
         backgroundColor: '#00B4FF'
     }
+
     return _.map(this.state.roadmap.items, function(item, key) {
       return (
             <div key={item.id}>
                 <GridItem style={style}>
-                    {item.fields.name}
+                    {item.fields.name + ' - ' + item.id}
                 </GridItem>
             </div>
         );
     });
+  },
+  getLayout: function() {
+    var layout = (this.state.roadmap && this.state.roadmap.layout) || this.state.layout;
+    if (!_.isEmpty(this.state.roadmap)) {
+        layout = _.map(this.state.roadmap.items || [], function(item, index) {
+            var layoutItem = this.getItemFromLayout(layout, item.id),
+                itemType = item.itemType,
+                startDate = item.fields['start_date$' + itemType],
+                endDate = item.fields['end_date$' + itemType],
+                startCoords = {};
+                
+
+            if (startDate && endDate) {
+                startCoords = this.getLayoutFromDate(startDate, endDate);
+            }
+
+            return _.assign({
+                i: item.id + '',
+                y: index,
+                w: 5,
+                h: 5
+            }, (layoutItem || {}), startCoords);
+
+        }, this);
+    }
+    return layout;
+  },
+  getItemFromLayout: function(layout, id) {
+    return _.find(layout, function(layoutItem) {
+        return (layoutItem.id + '') == (id + '');
+    })
   },
   getYear: function() {
     return moment().startOf('year').format('YYYY');
@@ -94,11 +125,11 @@ var RoadmapView = React.createClass({
 
     _.each(layout, function(layoutItem) {
         var jamaItem = this.getItemFromId(layoutItem.i);
-        
-        jamaItem.fields = _.omit(_.extend(jamaItem.fields, this.getDatesFromLayout(layoutItem,'$' + jamaItem.itemType)), 'progress$' + jamaItem.itemType);
+        jamaItem.fields = _.extend(jamaItem.fields, this.getDatesFromLayout(layoutItem,'$' + jamaItem.itemType));
 
         this.getFlux().actions.RoadmapActions.updateJamaItem({
             id: layoutItem.i,
+            roadmapId: this.getParams().roadmapId,
             item: {
                 fields: jamaItem.fields
             }
@@ -118,9 +149,9 @@ var RoadmapView = React.createClass({
   },
   getLayoutFromDate: function(start, end) {
     var mStart = moment(start),
-        startDiff = moment().startOf('year').diff(mStart, 'days'),
-        mEnd = momemt(end),
-        endDiff = moment().startOf('year').diff(mEnd, days);
+        startDiff = moment().startOf('year').diff(mStart, 'days') * -1,
+        mEnd = moment(end),
+        endDiff = moment().startOf('year').diff(mEnd, 'days') * -1;
 
     return {
         x: startDiff,
@@ -132,10 +163,44 @@ var RoadmapView = React.createClass({
   componentDidMount: function() {
     this.refs.grid.getDOMNode();
   },
+  handleChange: function(e) {
+    this.setState({
+        jamaApiId: e.target.value
+    })
+  },
+  loadItems: function(e) {
+    if (e.key == 'Enter' && this.state.jamaApiId) {
+        this.getFlux().actions.RoadmapActions.loadItemsForRoadmap({
+            jamaApiId: this.state.jamaApiId,
+            roadmapId: this.getParams().roadmapId
+        });
+        this.setState({
+            jamaApiId: ''
+        });
+
+    }
+  },
+  resyncItems: function() {
+    this.getFlux().actions.RoadmapActions.refreshItems({
+        items: this.state.roadmap.items || [],
+        roadmapId: this.getParams().roadmapId
+    })
+  },
   render: function() {
     return (
         <DocumentTitle title={this.getTitle(this.getParams().name)}>
             <div className="roadmap-view-wrap">
+                <div className="roadmap-view-control">
+                    <input 
+                        type="text" 
+                        value={this.state.jamaApiId} 
+                        onChange={this.handleChange} 
+                        onKeyDown={this.loadItems} 
+                        placeholder="Jama API ID"/>
+
+                    <button onClick={this.resyncItems}>Sync Items From Jama</button>
+
+                </div>
                 <div className="grid">
                     <div className="grid-labels">
                         {this.getMonthLabels()}
@@ -145,7 +210,7 @@ var RoadmapView = React.createClass({
                     </div>
                   <ReactGridLayout 
                     ref="grid"
-                    layout={(this.state.roadmap && this.state.roadmap.layout) || this.state.layout} 
+                    layout={this.getLayout()} 
                     onLayoutChange={this.onLayoutChange}
                     onDrag={this.handleDrag}
                       {...this.props}>

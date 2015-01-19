@@ -30,7 +30,7 @@ var RoadmapCreate = React.createClass({
             name: '',
             startDate: '',
             endDate: '',
-            jamaApiId: ''
+            jamaProjectId: ''
         };
     },
     handleChange: function(field, e) {
@@ -42,7 +42,7 @@ var RoadmapCreate = React.createClass({
         this.setState(state);
     },
     handleCreate: function() {
-        this.getFlux().actions.RoadmapActions.createRoadmap(this.state);
+        this.getFlux().actions.RoadmapActions.createRoadmap(_.omit(this.state, 'projects'));
         this.transitionTo('roadmap-home');
     },
     getStartDate: function() {
