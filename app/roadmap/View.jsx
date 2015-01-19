@@ -8,7 +8,8 @@ var React = require('react/addons'),
     StateMixin = require('react-router').State,
     GridItem = require('roadmapper/GridItem'),
     FluxMixin = require('fluxxor').FluxMixin(React),
-    StoreWatchMixin = require('fluxxor').StoreWatchMixin;
+    StoreWatchMixin = require('fluxxor').StoreWatchMixin,
+    deepEqual = require('deep-equal');
 
 var rowHeight = 30,
     cols = 365;
