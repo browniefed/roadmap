@@ -8,7 +8,10 @@ var React = require('react/addons'),
     StateMixin = require('react-router').State,
     GridItem = require('roadmapper/GridItem'),
     FluxMixin = require('fluxxor').FluxMixin(React),
-    StoreWatchMixin = require('fluxxor').StoreWatchMixin;
+    StoreWatchMixin = require('fluxxor').StoreWatchMixin,
+    DateInterface = require('roadmapper/layout/DateInterface');
+
+
 var rowHeight = 30,
     cols = 365;
 
@@ -140,22 +143,24 @@ var RoadmapView = React.createClass({
         return item.id == itemId;
     })
   },
-  getDatesFromLayout: function(layout, keyAppend) {
-    var dates = {};
-    dates['start_date' + keyAppend] = moment().startOf('year').add(layout.x, 'days').format('YYYY-MM-DD');
-    dates['end_date' + keyAppend] = moment().startOf('year').add(layout.x + layout.w, 'days').format('YYYY-MM-DD');
-    return dates;
+  getDatesFromLayout: function(layoutItem, keyAppend) {
+    return DateInterface.datesFromLayoutItem({
+        start: moment().startOf('year'),
+        layoutItem: layoutItem,
+        fields: {
+            start: 'start_date' + keyAppend,
+            end: 'end_date' + keyAppend
+        },
+        format: 'YYYY-MM-DD'
+    });
   },
   getLayoutFromDate: function(start, end) {
-    var mStart = moment(start),
-        startDiff = moment().startOf('year').diff(mStart, 'days') * -1,
-        mEnd = moment(end),
-        endDiff = moment().startOf('year').diff(mEnd, 'days') * -1;
+    var scale = {
+        start: moment().startOf('year'),
+        end: moment().startOf('year')
+    };
 
-    return {
-        x: startDiff,
-        w: endDiff - startDiff
-    }
+    return DateInterface.dateToLayoutFields(scale, start, end);
   },
   handleDrag: function(layout, nextLayout) {
   },
