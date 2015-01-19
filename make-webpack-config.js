@@ -32,7 +32,7 @@ module.exports = function(options) {
         // { test: /some-reg-exp$/, loader: "any-loader" }
     ];
     var alias = {
-
+        
     };
     var aliasLoader = {
 

@@ -1,8 +1,6 @@
-var React = require("react"),
-    Router = require('react-router');
+var AppRouter = require("../app/Router"),
+    React = require('react/addons');
 
-var ApplicationRouting = require("../app/Routes")
-
-Router.run(ApplicationRouting, function (Handler) {
+AppRouter.run(function (Handler) {
   React.render(<Handler/>, document.body);
 });

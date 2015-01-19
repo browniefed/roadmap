@@ -1,5 +1,7 @@
 .grid {
     position: relative;
+    width: 90%;
+    float: left;
 }
 .grid-lanes {
     position: absolute;
@@ -40,4 +42,14 @@
         bottom: 0;
         position: absolute;
     }
+}
+
+.roadmap-view-wrap {
+    width: 100%;
+    margin: 30px;
+}
+.roadmap-view-panel {
+    width: 10%;
+    float: left;
+    padding: 15px;
 }

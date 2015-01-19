@@ -1,0 +1,47 @@
+.roadmap-home {
+    max-width: 500px;
+    padding: 15px;
+}
+.roadmap-home-header {
+    width: 100%;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+.roadmap-home-title {
+    float: left;
+}
+.roadmap-home-create {
+    color: $brand-dark-gray;
+    float: right;
+    text-decoration: none;
+    &:hover {
+            color: $brand-orange;
+    }   
+}
+
+.roadmap-home-list {
+    padding: 15px;
+    li {
+        display: inline-block;
+        width: 100%;
+        border-bottom: 1px solid $border-gray;
+        color: $primary-text-color;
+        &:hover {
+            background-color: $primary-hover-color;
+            color: #FFF;
+        }
+    }
+    li:first-child {
+        border-top: 1px solid $border-gray;
+    }
+
+    a {
+        padding: 12px;
+        font-size: 1.3em;
+        text-decoration: none;
+        display: inline-block;
+        width: 100%;
+        color: inherit;
+
+    }
+}

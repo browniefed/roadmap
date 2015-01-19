@@ -5,12 +5,22 @@
     padding: 15px;
     background-color: $brand-dark-gray;
 
+    .nav {
+        float: left;
+    }
     .nav li{
         display: inline-block;
         margin-left: 10px;
     }
-    .nav a {
+    a {
         color: #FFF;
         text-decoration: none;
+    }
+    
+    .addRoadmap {
+        float: right;
+        &:hover {
+            color: $brand-orange;
+        }
     }
 }

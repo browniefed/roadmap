@@ -13,10 +13,8 @@ var NavMain = React.createClass({
                     <li>
                         <Link to="roadmap">Roadmaps</Link>
                     </li>
-                    <li>
-                        <Link to="roadmap-create">New Roadmap</Link>
-                    </li>
                 </ul>
+                <Link to="roadmap-create" className="addRoadmap">+ New Roadmap</Link>
             </div>
         )
     }
