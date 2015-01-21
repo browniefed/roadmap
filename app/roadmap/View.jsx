@@ -47,21 +47,59 @@ var RoadmapView = React.createClass({
     var style = {
         width: '100%', 
         height: '100%', 
-        backgroundColor: '#00B4FF'
+        backgroundColor: '#00B4FF',
+        position: 'relative'
     }
 
     return _.map(this.state.roadmap.items, function(item, key) {
+        var itemProgress = this.getProgressForItem(item);
       return (
             <div key={item.id}>
                 <GridItem style={style}>
                     {item.fields.name + ' - ' + item.id}
+                    {this.getProgressBars(itemProgress)}
                 </GridItem>
             </div>
         );
-    });
+    }, this);
+  },
+  getProgressBars: function(progressItems) {
+    if (_.isEmpty(progressItems)) {
+        return null;
+    }
+
+    var height = (100/progressItems.length ) + '%';
+    var progressBars = _.map(progressItems, function(progressPercent) {
+        var style = {
+            height: height,
+            width: progressPercent
+        }
+        return (
+            <div className="progress-bar" style={style} />
+        )
+    })
+  
+
+    return (
+        <div className="progress-bars">
+            {progressBars}
+        </div>
+    )
+   },
+
+
+  getProgressForItem: function(item) {
+    var itemProgress;
+    if (!_.isEmpty(this.state.roadmap.progressFields)) {
+        itemProgress = _.filter(_.map(this.state.roadmap.progressFields, function(progressField) {
+            return item.fields[progressField.name];
+        }), function(progress) {
+            return progress;
+        });
+    }
+    return itemProgress;
   },
   getLayout: function() {
-    debugger;
     var layout = (this.state.roadmap && this.state.roadmap.layout) || this.state.layout;
     if (!_.isEmpty(this.state.roadmap)) {
         layout = _.map(this.state.roadmap.items || [], function(item, index) {
@@ -109,6 +147,9 @@ var RoadmapView = React.createClass({
 
     _.each(layout, function(layoutItem) {
         var jamaItem = this.getItemFromId(layoutItem.i);
+        var progressFields = _.pluck(this.state.roadmap.progressFields, 'name');
+
+
         jamaItem.fields = _.extend(jamaItem.fields, this.getDatesFromLayout(layoutItem,'$' + jamaItem.itemType));
 
         this.getFlux().actions.RoadmapActions.updateJamaItem({
@@ -116,7 +157,8 @@ var RoadmapView = React.createClass({
             roadmapId: this.getParams().roadmapId,
             item: {
                 fields: jamaItem.fields
-            }
+            },
+            removeFields: progressFields
         })
     }, this)
   },
