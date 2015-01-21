@@ -23,7 +23,7 @@
     "fluxxor": "^1.5.1",
     "html-loader": "^0.2.2",
     "immutable": "^3.2.1",
-    "jama-rest-api": "0.0.8",
+    "jama-rest-api": "0.0.9",
     "jsx-loader": "^0.12.2",
     "less": "^1.7.4",
     "less-loader": "^0.7.5",

@@ -56,12 +56,42 @@ var RoadmapView = React.createClass({
       return (
             <div key={item.id}>
                 <GridItem style={style}>
-                    {item.fields.name + ' - ' + item.id}
+                    {this.getItemName(item, this.state.selectedGroupField)}
                     {this.getProgressBars(itemProgress)}
                 </GridItem>
             </div>
         );
     }, this);
+  },
+  getItemName: function(item, groupedField) {
+    var name = item.fields.name + ' - ' + item.id;
+
+    if (groupedField && item.fields[groupedField]) {
+        name += ' - ' + this.getGroupableFieldLabel(groupedField, item.fields[groupedField]);
+    }
+
+    return name;
+  },
+  getGroupableFieldLabel: function(groupedField, value) {
+    var itemField = _.find(this.state.roadmap.itemTypes, function(field) {
+        return groupedField == field.name;
+    }),
+    value;
+
+    if (itemField.fieldType === "LOOKUP") {
+        value = _.find(this.state.roadmap.pickListOptions[itemField.name].options, function(options) {
+            return options.id == value;
+        });
+        value = (value && value.name) || '';
+    } else {
+        value = _.find(this.state.roadmap.releases, function(release) {
+            return release.id == value;
+        });
+        value = (value && value.name) || '';
+
+    }
+
+    return value;
   },
   getProgressBars: function(progressItems) {
     if (_.isEmpty(progressItems)) {
