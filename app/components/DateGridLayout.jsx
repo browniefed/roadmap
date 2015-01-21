@@ -27,13 +27,18 @@ var DateGridLayout = React.createClass({
             )
         });
     },
+    getOffset: function() {
+        return {
+            'paddingLeft': this.props.offset + 'px'
+        }
+    },
     render: function() {
         return (
             <div className="grid">
-                <div className="grid-labels">
+                <div className="grid-labels" style={this.getOffset()}>
                     {this.getMonthLabels()}
                 </div>
-                <div className="grid-lanes">
+                <div className="grid-lanes" style={this.getOffset()}>
                     {this.getGridLanes()}
                 </div>
                 <ReactGridLayout 

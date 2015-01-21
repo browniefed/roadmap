@@ -6,6 +6,7 @@ var React = require('react/addons'),
     TitleMixin = require('../mixins/TitleMixin'),
     StateMixin = require('react-router').State,
     GridItem = require('roadmapper/GridItem'),
+    GridLabel = require('roadmapper/GridLabel'),
     FluxMixin = require('fluxxor').FluxMixin(React),
     StoreWatchMixin = require('fluxxor').StoreWatchMixin,
     DateGridLayout = require('../components/DateGridLayout'),
@@ -13,7 +14,8 @@ var React = require('react/addons'),
 
 
 var rowHeight = 30,
-    cols = 365;
+    cols = 365,
+    useLabelOffset = 5;
 
 var RoadmapView = React.createClass({
   mixins: [
@@ -42,16 +44,95 @@ var RoadmapView = React.createClass({
         layout: []
     };
   },
+  getLayout: function() {
+    var layout = (this.state.roadmap && this.state.roadmap.layout) || this.state.layout;
+    var groupLabels = this.getGroupingLabels(),
+        labelOffset = 0;
 
+    var colsWidth = cols;
+    if (groupLabels) {
+        labelOffset = useLabelOffset;
+        colsWidth += labelOffset;
+    }
+
+    if (!_.isEmpty(this.state.roadmap)) {
+        layout = _.map(this.state.roadmap.items || [], function(item, index) {
+            var layoutItem = this.getItemFromLayout(layout, item.id),
+                itemType = item.itemType,
+                startDate = item.fields['start_date$' + itemType],
+                endDate = item.fields['end_date$' + itemType],
+                startCoords = {};
+                
+
+            if (startDate && endDate) {
+                startCoords = this.getLayoutFromDate(startDate, endDate);
+            }
+
+            var lay = _.assign({
+                i: item.id + '',
+                y: index,
+                w: 5,
+                h: 3,
+                minH: 3,
+                maxH: 3,
+            }, (layoutItem || {}), startCoords);
+            lay.x += labelOffset;
+            return lay;
+        }, this);
+    }
+
+
+    var labelLayouts = _.map(groupLabels, function(label, index) {
+        return [{
+            i: label.value + '_' + label.field,
+            x: 0,
+            y: ((index * 9) + 3),
+            w: labelOffset,
+            h: 9,
+            maxW: labelOffset,
+            isDraggable: false,
+            isResizable: true
+        },
+        {
+            i: label.value + '_' + label.field + '_swim',
+            x: 0,
+            y: ((index * 9) + 3) + (1),
+            w: cols,
+            h: 1
+        }]
+    });
+
+   _.each(labelLayouts, function(labelLayout) {
+        layout = layout.concat(labelLayout || []);
+   })
+
+   return layout;
+  },
   generateDOM: function() {
     var style = {
         width: '100%', 
         height: '100%', 
         backgroundColor: '#00B4FF',
         position: 'relative'
+    };
+
+    var labelStyle = {
+        width: '100%', 
+        height: '100%', 
+        backgroundColor: '#CCC',
+        position: 'relative'
     }
 
-    return _.map(this.state.roadmap.items, function(item, key) {
+    var swimStyle = {
+        width: '100%', 
+        height: '100%', 
+        backgroundColor: '#000',
+        position: 'relative'
+    }
+
+    var groupLabels = this.getGroupingLabels();
+
+    var items = _.map(this.state.roadmap.items, function(item, key) {
         var itemProgress = this.getProgressForItem(item);
       return (
             <div key={item.id}>
@@ -62,6 +143,30 @@ var RoadmapView = React.createClass({
             </div>
         );
     }, this);
+
+    var labels = _.map(groupLabels, function(label) {
+        return (
+            <div key={label.value + '_' + label.field}>
+                <GridLabel style={labelStyle}>
+                    {label.label}
+                </GridLabel>
+            </div>
+        )
+    });
+
+    var swimLanes = _.map(groupLabels, function(label) {
+        return (
+            <div key={label.value + '_' + label.field + '_swim'}>
+                <GridItem style={swimStyle}>
+                </GridItem>
+            </div>
+        )
+    });
+
+    return items.concat(labels || []).concat(swimLanes || []);
+  },
+  getGroupingLabels: function() {
+    return this.extractLabelsFromItems(this.state.roadmap.items, this.state.selectedGroupField);
   },
   getItemName: function(item, groupedField) {
     var name = item.fields.name + ' - ' + item.id;
@@ -92,6 +197,26 @@ var RoadmapView = React.createClass({
     }
 
     return value;
+  },
+  extractLabelsFromItems: function(items, groupedField) {
+    if (!groupedField) {
+        return null;
+    }
+
+    var labels = _.map(items, function(item) {
+        var value = item.fields[groupedField],
+            label = this.getGroupableFieldLabel(groupedField, value);
+
+        return {
+            value: value,
+            label: label,
+            field: groupedField
+        }
+    }, this);
+
+    return _.uniq(labels, function(label) {
+        return label.value;
+    })
   },
   getProgressBars: function(progressItems) {
     if (_.isEmpty(progressItems)) {
@@ -129,34 +254,7 @@ var RoadmapView = React.createClass({
     }
     return itemProgress;
   },
-  getLayout: function() {
-    var layout = (this.state.roadmap && this.state.roadmap.layout) || this.state.layout;
-    if (!_.isEmpty(this.state.roadmap)) {
-        layout = _.map(this.state.roadmap.items || [], function(item, index) {
-            var layoutItem = this.getItemFromLayout(layout, item.id),
-                itemType = item.itemType,
-                startDate = item.fields['start_date$' + itemType],
-                endDate = item.fields['end_date$' + itemType],
-                startCoords = {};
-                
 
-            if (startDate && endDate) {
-                startCoords = this.getLayoutFromDate(startDate, endDate);
-            }
-
-            return _.assign({
-                i: item.id + '',
-                y: index,
-                w: 5,
-                h: 3,
-                minH: 3,
-                maxH: 3,
-            }, (layoutItem || {}), startCoords);
-
-        }, this);
-    }
-    return layout;
-  },
   getItemFromLayout: function(layout, id) {
     return _.find(layout, function(layoutItem) {
         return (layoutItem.id + '') == (id + '');
@@ -174,13 +272,23 @@ var RoadmapView = React.createClass({
         id: this.getParams().roadmapId,
         roadmap: this.state.roadmap
     });
+    
+    var groupLabels = this.getGroupingLabels(),
+        offset = 0;
+
+    if (groupLabels) {
+        offset = useLabelOffset;
+    }
 
     _.each(layout, function(layoutItem) {
         var jamaItem = this.getItemFromId(layoutItem.i);
+        if (!jamaItem) {
+            return;
+        }
         var progressFields = _.pluck(this.state.roadmap.progressFields, 'name');
 
 
-        jamaItem.fields = _.extend(jamaItem.fields, this.getDatesFromLayout(layoutItem,'$' + jamaItem.itemType));
+        jamaItem.fields = _.extend(jamaItem.fields, this.getDatesFromLayout(layoutItem,'$' + jamaItem.itemType, offset));
 
         this.getFlux().actions.RoadmapActions.updateJamaItem({
             id: layoutItem.i,
@@ -197,7 +305,7 @@ var RoadmapView = React.createClass({
         return item.id == itemId;
     })
   },
-  getDatesFromLayout: function(layoutItem, keyAppend) {
+  getDatesFromLayout: function(layoutItem, keyAppend, offset) {
     return DateInterface.datesFromLayoutItem({
         start: moment().startOf('year'),
         layoutItem: layoutItem,
@@ -205,7 +313,8 @@ var RoadmapView = React.createClass({
             start: 'start_date' + keyAppend,
             end: 'end_date' + keyAppend
         },
-        format: 'YYYY-MM-DD'
+        format: 'YYYY-MM-DD',
+        offset: offset
     });
   },
   getLayoutFromDate: function(start, end) {
@@ -265,6 +374,8 @@ var RoadmapView = React.createClass({
 
   },
   render: function() {
+    var groupLabels = this.getGroupingLabels();
+
     return (
         <DocumentTitle title={this.getTitle(this.getParams().name)}>
             <div className="roadmap-view-wrap">
@@ -284,6 +395,7 @@ var RoadmapView = React.createClass({
                     layout={this.getLayout()}
                     onDrag={this.handleDrag()}
                     onLayoutChange={this.handleLayoutChange}
+                    offset={groupLabels ? 30 : 0}
                 >
                     {this.generateDOM()}
                 </DateGridLayout>
