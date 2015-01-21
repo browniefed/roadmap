@@ -213,6 +213,27 @@ var RoadmapView = React.createClass({
         roadmapId: this.getParams().roadmapId
     })
   },
+  handleGroupChange: function(e) {
+    this.setState({
+        selectedGroupField: e.target.value
+    });
+  },
+  getGroupableElements: function() {
+    var options = _.map(this.state.roadmap.groupableFields, function(field) {
+        return (
+            <option value={field.name}>{field.label}</option>
+        );
+    });
+
+    options.unshift(<option value="">No Grouping</option>);
+
+    return (
+        <select onChange={this.handleGroupChange} value={this.state.selectedGroupField}>
+            {options}
+        </select>
+    );
+
+  },
   render: function() {
     return (
         <DocumentTitle title={this.getTitle(this.getParams().name)}>
@@ -226,7 +247,7 @@ var RoadmapView = React.createClass({
                         placeholder="Jama API ID"/>
 
                     <button onClick={this.resyncItems}>Sync Items From Jama</button>
-
+                    {this.getGroupableElements()}
                 </div>
                 <DateGridLayout
                     {...this.props}
