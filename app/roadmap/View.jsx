@@ -55,33 +55,6 @@ var RoadmapView = React.createClass({
         colsWidth += labelOffset;
     }
 
-    if (!_.isEmpty(this.state.roadmap)) {
-        layout = _.map(this.state.roadmap.items || [], function(item, index) {
-            var layoutItem = this.getItemFromLayout(layout, item.id),
-                itemType = item.itemType,
-                startDate = item.fields['start_date$' + itemType],
-                endDate = item.fields['end_date$' + itemType],
-                startCoords = {};
-                
-
-            if (startDate && endDate) {
-                startCoords = this.getLayoutFromDate(startDate, endDate);
-            }
-
-            var lay = _.assign({
-                i: item.id + '',
-                y: index,
-                w: 5,
-                h: 3,
-                minH: 3,
-                maxH: 3,
-            }, (layoutItem || {}), startCoords);
-            lay.x += labelOffset;
-            return lay;
-        }, this);
-    }
-
-
     var labelLayouts = _.map(groupLabels, function(label, index) {
         return [{
             i: label.value + '_' + label.field,
@@ -98,9 +71,54 @@ var RoadmapView = React.createClass({
             x: 0,
             y: ((index * 9) + 3) + (1),
             w: cols,
-            h: 1
+            h: 1,
+            isDraggable: false,
+            isResizable: false
         }]
     });
+
+
+    if (!_.isEmpty(this.state.roadmap)) {
+        layout = _.map(this.state.roadmap.items || [], function(item, index) {
+            var layoutItem = this.getItemFromLayout(layout, item.id),
+                itemType = item.itemType,
+                startDate = item.fields['start_date$' + itemType],
+                endDate = item.fields['end_date$' + itemType],
+                startCoords = {},
+                y = index,
+                laneLabel,
+                laneLabelIndex;
+                
+
+            if (startDate && endDate) {
+                startCoords = this.getLayoutFromDate(startDate, endDate);
+            }
+            if (groupLabels) {
+                laneLabel = _.find(groupLabels, function(label, index) {
+                     if (item.fields[label.field] == label.value) {
+                        laneLabelIndex = index;
+                        return true;
+                     }
+                });
+
+                if (laneLabel) {
+                    y = ((laneLabelIndex  * 9) + 3);
+                }
+            }
+
+            var lay = _.assign({
+                i: item.id + '',
+                y: y,
+                w: 5,
+                h: 3,
+                minH: 3,
+                maxH: 3,
+            }, (layoutItem || {}), startCoords);
+            lay.x += labelOffset;
+            return lay;
+        }, this);
+    }
+
 
    _.each(labelLayouts, function(labelLayout) {
         layout = layout.concat(labelLayout || []);
