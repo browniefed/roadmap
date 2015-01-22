@@ -26,9 +26,7 @@ var RoadmapView = React.createClass({
     ],
 
   getStateFromFlux: function() {
-    return {
-        roadmap: this.getFlux().store('RoadmapStore').getRoadmap(this.getParams().roadmapId)
-    }
+    return this.getFlux().store('RoadmapStore').getState(this.getParams().roadmapId)
   },
   getDefaultProps: function() {
     return {
@@ -154,7 +152,7 @@ var RoadmapView = React.createClass({
         var itemProgress = this.getProgressForItem(item);
       return (
             <div key={item.id}>
-                <GridItem style={style}>
+                <GridItem style={style} onClick={_.bind(this.showItemInPanel, this, item)}>
                     {this.getItemName(item, this.state.selectedGroupField)}
                     {this.getProgressBars(itemProgress)}
                 </GridItem>
@@ -182,6 +180,13 @@ var RoadmapView = React.createClass({
     });
 
     return items.concat(labels || []).concat(swimLanes || []);
+  },
+  showItemInPanel: function(item) {
+    this.setState({
+        selectedItem: item,
+        selectedItemComments: []
+    });
+    this.getFlux().actions.RoadmapActions.loadCommentsForItem(item);
   },
   getGroupingLabels: function() {
     return this.extractLabelsFromItems(this.state.roadmap.items, this.state.selectedGroupField);
@@ -391,6 +396,9 @@ var RoadmapView = React.createClass({
     );
 
   },
+  handleAddComment: function(text) {
+    console.log(text);
+  },
   render: function() {
     var groupLabels = this.getGroupingLabels();
 
@@ -417,7 +425,10 @@ var RoadmapView = React.createClass({
                 >
                     {this.generateDOM()}
                 </DateGridLayout>
-                <RoadmapPanel />
+                <RoadmapPanel 
+                    item={this.state.selectedItem} 
+                    comments={this.state.selectedItemComments}
+                    onAddComment={this.handleAddComment}/>
           </div>
       </DocumentTitle>
     );
