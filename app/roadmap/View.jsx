@@ -399,6 +399,19 @@ var RoadmapView = React.createClass({
   handleAddComment: function(text) {
     console.log(text);
   },
+
+  getReleaseLines: function() {
+    var groupLabels = this.getGroupingLabels();
+
+    if (groupLabels) {
+        var releaseDates = this.getReleases(this.state.roadmap.releases, _.pluck(groupLabels, 'value'));
+    }
+  },
+  getReleases: function(releases, releaseValues) {
+    return _.filter(releases, function(release) {
+        return _.contains(releaseValues, release.id);
+    });
+  },
   render: function() {
     var groupLabels = this.getGroupingLabels();
 
@@ -422,6 +435,7 @@ var RoadmapView = React.createClass({
                     onDrag={this.handleDrag()}
                     onLayoutChange={this.handleLayoutChange}
                     offset={groupLabels ? 30 : 0}
+                    addLines={this.getReleaseLines()}
                 >
                     {this.generateDOM()}
                 </DateGridLayout>
