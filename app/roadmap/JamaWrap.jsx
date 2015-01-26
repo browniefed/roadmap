@@ -380,11 +380,11 @@ var RoadmapView = React.createClass({
   },
   handleGroupChange: function(e) {
     var query = this.getQuery(),
-        newQuery = '';
+        newQuery = {};
     if (!query.groupBy) {
-        newQuery = '?groupBy=' + e.target.value;
+        newQuery.groupBy = e.target.value;
     }
-    this.transitionTo(this.getPathname() + newQuery);
+    this.transitionTo(this.makePath(this.getPathname(), {}, newQuery));
   },
   getSelectedGroupField: function() {
     return this.getQuery().groupBy;
