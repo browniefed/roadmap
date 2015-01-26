@@ -435,7 +435,7 @@ var RoadmapView = React.createClass({
                     layout={this.getLayout()}
                     onDrag={this.handleDrag()}
                     onLayoutChange={this.handleLayoutChange}
-                    offset={groupLabels ? 90 : 0}
+                    offset={groupLabels ? 71 : 0}
                     addLines={this.getReleaseLines()}
                 >
                     {this.generateDOM()}
