@@ -5,6 +5,7 @@ var React = require('react/addons'),
     DocumentTitle = require('react-document-title'),
     TitleMixin = require('../mixins/TitleMixin'),
     StateMixin = require('react-router').State,
+    NavigationMixin = require('react-router').Navigation,
     GridItem = require('roadmapper/GridItem'),
     GridLabel = require('roadmapper/GridLabel'),
     FluxMixin = require('fluxxor').FluxMixin(React),
@@ -21,6 +22,7 @@ var RoadmapView = React.createClass({
   mixins: [
             TitleMixin, 
             StateMixin, 
+            NavigationMixin,
             FluxMixin,
             StoreWatchMixin('RoadmapStore')
     ],
@@ -154,7 +156,7 @@ var RoadmapView = React.createClass({
       return (
             <div key={item.id}>
                 <GridItem style={style} onClick={_.bind(this.showItemInPanel, this, item)}>
-                    {this.getItemName(item, this.state.selectedGroupField)}
+                    {this.getItemName(item, this.getSelectedGroupField())}
                     {this.getProgressBars(itemProgress)}
                 </GridItem>
             </div>
@@ -190,7 +192,7 @@ var RoadmapView = React.createClass({
     this.getFlux().actions.RoadmapActions.loadCommentsForItem(item);
   },
   getGroupingLabels: function() {
-    return this.extractLabelsFromItems(this.state.roadmap.items, this.state.selectedGroupField);
+    return this.extractLabelsFromItems(this.state.roadmap.items, this.getSelectedGroupField());
   },
   getItemName: function(item, groupedField) {
     var name = item.fields.name + ' - ' + item.id;
@@ -377,9 +379,15 @@ var RoadmapView = React.createClass({
     })
   },
   handleGroupChange: function(e) {
-    this.setState({
-        selectedGroupField: e.target.value
-    });
+    var query = this.getQuery(),
+        newQuery = '';
+    if (!query.groupBy) {
+        newQuery = '?groupBy=' + e.target.value;
+    }
+    this.transitionTo(this.getPathname() + newQuery);
+  },
+  getSelectedGroupField: function() {
+    return this.getQuery().groupBy;
   },
   getGroupableElements: function() {
     var options = _.map(this.state.roadmap.groupableFields, function(field) {
@@ -391,7 +399,7 @@ var RoadmapView = React.createClass({
     options.unshift(<option value="">No Grouping</option>);
 
     return (
-        <select onChange={this.handleGroupChange} value={this.state.selectedGroupField}>
+        <select onChange={this.handleGroupChange} value={this.getSelectedGroupField() || ''}>
             {options}
         </select>
     );
