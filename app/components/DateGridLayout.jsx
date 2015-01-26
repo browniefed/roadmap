@@ -23,7 +23,7 @@ var DateGridLayout = React.createClass({
     getGridLanes: function() {
         return _.map(this.getMonths(), function(month) {
             return (
-                <div className="month-grid" />
+                <div className={"month-grid month-grid-lane-" + month.toLowerCase()} />
             )
         });
     },

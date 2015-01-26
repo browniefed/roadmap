@@ -18,7 +18,6 @@
     text-align: center;
 }
 .month-grid {
-    width: 8.33333333%;
     position: relative;
     display: inline-block;
     height: 100%;
@@ -42,6 +41,17 @@
         bottom: 0;
         position: absolute;
     }
+}
+
+.month-grid-lane-january, .month-grid-lane-march, .month-grid-lane-may, .month-grid-lane-july, .month-grid-lane-august, .month-grid-lane-october, .month-grid-lane-december {
+    width: 8.493151%;
+}
+.month-grid-lane-february {
+    width: 7.671233%;
+}
+
+.month-grid-lane-april, .month-grid-lane-june, .month-grid-lane-september, .month-grid-lane-november {
+    width: 8.219178%;
 }
 
 .roadmap-view-control {
