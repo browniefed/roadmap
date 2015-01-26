@@ -41,6 +41,9 @@ var DateGridLayout = React.createClass({
                 <div className="grid-lanes" style={this.getOffset()}>
                     {this.getGridLanes()}
                 </div>
+                <div className="grid-lanes">
+                    {this.props.addLines}
+                </div>
                 <ReactGridLayout 
                     {...this.props}
                     layout={this.props.layout} 

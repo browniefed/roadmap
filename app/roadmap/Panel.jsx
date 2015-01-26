@@ -1,5 +1,6 @@
 var React = require('react/addons'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    moment = require('moment');
 
 var RoadmapPanel = React.createClass({
     getDefaultProps: function() {
@@ -27,7 +28,7 @@ var RoadmapPanel = React.createClass({
             return (
                 <div style={{marginTop: '5px'}}>
                     <div>Comment By: {comment.createdBy}</div>
-                    <div>Posted at : {comment.createdDate}</div>
+                    <div>Posted at : {moment(comment.createdDate).fromNow()}</div>
                     <div dangerouslySetInnerHTML={{__html: comment.body.text}} />
                 </div>
             )

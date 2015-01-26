@@ -149,15 +149,27 @@ var RoadmapView = React.createClass({
         position: 'relative'
     }
 
-    var groupLabels = this.getGroupingLabels();
+    var groupLabels = this.getGroupingLabels(),
+        layout = this.getLayout();
 
     var items = _.map(this.state.roadmap.items, function(item, key) {
-        var itemProgress = this.getProgressForItem(item);
+        var itemProgress = this.getProgressForItem(item),
+            releaseIssueBar = null;
+        if (groupLabels) {
+         
+            var layoutItem = this.getLayoutItemFromLayout(layout, item.id);
+            var release = this.getReleaseForItem(item) || {};
+            var releaseOffset = this.getLayoutFromDate(release.releaseDate, release.releaseDate);
+
+            releaseIssueBar = this.getReleaseIssueBar(layoutItem, releaseOffset);
+        }
+           
       return (
             <div key={item.id}>
                 <GridItem style={style} onClick={_.bind(this.showItemInPanel, this, item)}>
                     {this.getItemName(item, this.getSelectedGroupField())}
                     {this.getProgressBars(itemProgress)}
+                    {releaseIssueBar}
                 </GridItem>
             </div>
         );
@@ -183,6 +195,47 @@ var RoadmapView = React.createClass({
     });
 
     return items.concat(labels || []).concat(swimLanes || []);
+  },
+  getReleaseIssueBar: function(layoutItem, releaseCoord) {
+
+    var itemOffsetRelease = this.getReleaseIssueCalculations(layoutItem, releaseCoord);
+
+    if (!itemOffsetRelease) {
+        return null;
+    }
+    var style = {
+        left:  itemOffsetRelease.offset + '%'
+    };
+
+    return (
+        <div className="release-item-error" style={style}/>
+    )
+
+  },
+  getReleaseIssueCalculations: function(layoutItem, releaseCoord) {
+    if (!layoutItem || !releaseCoord) {
+        return null;
+    }
+
+    
+    var releaseRange = _.range(releaseCoord.x, cols + 1);
+
+    //Bail early
+    if ((layoutItem.x + layoutItem.w) <= releaseCoord.x) {
+        return null
+    }
+
+    //If it is all past then return full bar
+    if (layoutItem.x > releaseCoord.x) {
+        return {
+            offset: 0
+        }
+    }
+    //return diff in coords
+    return {
+        offset: ((releaseCoord.x - layoutItem.x) / layoutItem.w) * 100
+    }
+
   },
   showItemInPanel: function(item) {
     this.setState({
@@ -284,6 +337,11 @@ var RoadmapView = React.createClass({
   getItemFromLayout: function(layout, id) {
     return _.find(layout, function(layoutItem) {
         return (layoutItem.id + '') == (id + '');
+    })
+  },
+  getLayoutItemFromLayout: function(layout, id) {
+    return _.find(layout, function(layoutItem) {
+        return (layoutItem.i + '') == (id + '');
     })
   },
 
@@ -408,13 +466,45 @@ var RoadmapView = React.createClass({
   handleAddComment: function(text) {
     console.log(text);
   },
+  getReleaseForItem: function(item) {
+    var releaseDates = this.getReleaseDates(),
+        groupingFields = this.getGroupingLabels();
 
-  getReleaseLines: function() {
+    var releaseGroup = _.find(groupingFields, function(release) {
+        return item.fields[release.field] == release.value;
+    });
+    var itemRelease = _.find(this.state.roadmap.releases, function(release) {
+        return release.id == releaseGroup.value;
+    });
+
+    return itemRelease;
+  },
+  getReleaseDates: function() {
     var groupLabels = this.getGroupingLabels();
 
     if (groupLabels) {
-        var releaseDates = this.getReleases(this.state.roadmap.releases, _.pluck(groupLabels, 'value'));
+        return releaseDates = this.getReleases(this.state.roadmap.releases, _.pluck(groupLabels, 'value'));
     }
+  },
+  getReleaseLines: function() {
+    var releaseDates = this.getReleaseDates();
+    if (!releaseDates) {
+        return null;
+    }
+
+    return _.map(releaseDates, function(releaseDate) {
+        var offset = this.getLayoutFromDate(releaseDate.releaseDate, releaseDate.releaseDate),
+            prettyDate = moment(releaseDate.releaseDate).format('MM-DD-YYYY');
+        var style = {
+            left: ((offset.x/cols) * 100) + '%'
+        }
+        return (
+            <div className="release-end-date" style={style}>
+                {releaseDate.name + ' - ' + prettyDate} 
+                <div className="release-line" />
+            </div>
+        )
+    }, this);
   },
   getReleases: function(releases, releaseValues) {
     return _.filter(releases, function(release) {
