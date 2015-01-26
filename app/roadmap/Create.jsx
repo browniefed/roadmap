@@ -3,6 +3,7 @@ var React = require('react/addons'),
     DocumentTitle = require('react-document-title'),
     Calendar = require('react-input-calendar'),
     ProjectSelector = require('roadmapper/components/ProjectSelector'),
+    JamaTree = require('roadmapper/components/tree/JamaTree'),
     _ = require('lodash'),
     Fluxxor = require('fluxxor'),
     FluxMixin = Fluxxor.FluxMixin(React),
@@ -30,7 +31,8 @@ var RoadmapCreate = React.createClass({
             name: '',
             startDate: '',
             endDate: '',
-            jamaProjectId: ''
+            jamaProjectId: '',
+            selectedItem: null
         };
     },
     handleChange: function(field, e) {
@@ -50,6 +52,21 @@ var RoadmapCreate = React.createClass({
     },
     getEndDate: function() {
         return this.state.endDate || moment().endOf('year').format('MM-DD-YYYY');
+    },
+    handleClickOnItem: function(item, selected) {
+        this.setState({
+            selectedItem: (selected && item) || null
+        });
+    },
+    getJamaTree: function() {
+        if (this.state.jamaProjectId) {
+            return (
+                <JamaTree 
+                    onClick={this.handleClickOnItem}
+                    projectId={+this.state.jamaProjectId}/>
+            )
+        }
+        return null;
     },
     render: function() {
         return (
@@ -84,6 +101,9 @@ var RoadmapCreate = React.createClass({
                                     options={this.state.projects}
                                 ></ProjectSelector>
                             </label>
+                        </div>
+                        <div className="create-road-tree-selector">
+                            {this.getJamaTree()}
                         </div>
                         <div className="create-road-input">
                             <button onClick={this.handleCreate}>Create</button>

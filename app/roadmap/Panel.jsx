@@ -13,7 +13,6 @@ var RoadmapPanel = React.createClass({
             return null;
         }
 
-        console.log(this.props.comments);
         return _.map(this.props.item.fields, function(value, key) {
             return (
                 <div>
